@@ -10,18 +10,21 @@ def gener(df, error):
     """
 
     error = error
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if not pd.isna(row['错误位置1']) and row['错误位置1'] not in error['错误位置']:
             error['错误位置'].append(row['错误位置1'])
         if not pd.isna(row['错误位置2']) and row['错误位置2'] not in error['错误位置']:
             error['错误位置'].append(row['错误位置2'])
 
         if not pd.isna(row['归纳错误类型']):
-            if row['归纳错误类型'] not in error['错误类型']:
+            if row['归纳错误类型'] not in error['错误类型'] and not pd.isna(row['原错误类型']):
                 error['错误类型'][row['归纳错误类型']] = []
 
             if row['原错误类型'] not in error['错误类型'][row['归纳错误类型']]:
-                error['错误类型'][row['归纳错误类型']].append(row['原错误类型'])
+                if pd.isna(row['原错误类型']):
+                    print('存在空值', end=',')
+                else:
+                    error['错误类型'][row['归纳错误类型']].append(row['原错误类型'])
 
     return error
 
@@ -50,12 +53,12 @@ def rever(d):
     参数：
         d：要反转的字典
     """
-    print(d)
+
     tmp = {}
     for k, v in d.items():
         for e in v:
             tmp[e] = k
-    print(tmp)
+
     return tmp
 
 
@@ -80,6 +83,8 @@ def recog(df, error):
 
         for k, v in error['错误类型'].items():
             if des.find(k) != -1:
+                # print(type(df.loc[index, '错误类型']))
+                # print(v)
                 df.loc[index, '错误类型'] = df.loc[index, '错误类型']+v+','
                 df.loc[index, '原文错误'] = df.loc[index, '原文错误']+k+','
         df.loc[index, '错误类型'] = df.loc[index, '错误类型'].strip(',')
